@@ -172,6 +172,8 @@ if __name__ == "__main__":
 python3 script.py
 ```
 
+<img src="./python.png">
+
 --------
 
 ## Автоматизация процеса проверки url через virustotal (JavaScript)
