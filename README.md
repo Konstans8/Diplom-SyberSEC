@@ -2,15 +2,15 @@
 -------
 
 - [Diplom Project](#diplom-project)
-  * [Расследование инцидентов](#------------------------)
-  * [Скрипт на Python, который в информативном виде запускает скрипт с установкой](#----------python------------------------------------------------------------)
-  * [Автоматизация процеса проверки url через virustotal (JavaScript)](#-------------------------------url-------virustotal--javascript-)
-  * [Уязвимость CVE-2021-41773 на web сервере](#-----------cve-2021-41773----web--------)
-  * [Отправить фишинговое письмо](#---------------------------)
-  * [Установка SIEM системы](#----------siem--------)
+  * [Расследование инцидентов](#---)
+  * [Скрипт на Python, который в информативном виде запускает скрипт с установкой](#---)
+  * [Автоматизация процеса проверки url через virustotal (JavaScript)](#---)
+  * [Уязвимость CVE-2021-41773 на web сервере](#---)
+  * [Отправить фишинговое письмо](#---)
+  * [Установка SIEM системы](#---)
 
 
-## Расследование инцидентов
+## Расследование инцидентов 
 
 1. Использование логов Firewall для обнаружения угроз.
 - Мониторинг подозрительных IP: Проверка на повторные соединения с необычных или черных IP.
@@ -80,7 +80,7 @@
 
 ## Скрипт на Python, который в информативном виде запускает скрипт с установкой
 
-```sh
+```Python
 import os
 import subprocess
 import platform
@@ -190,7 +190,7 @@ node --version
 npm install axios
 ```
 
-```sh
+```JavaScript
 const axios = require('axios');
 const readline = require('readline');
 
@@ -301,8 +301,6 @@ node script.js <URL>
 1. Подтверждение версии Apache
 
 ```sh
-#!/bin/bash
-
 apache2 -v
 ```
 Если версия 2.4.50 и ниже, сервер уязвим.
@@ -329,7 +327,7 @@ curl --path-as-is http://<IP-server>/%2e%2e/%2e%2e/etc/passwd
 > Ограничение доступа к важным файлам и директориям:
 
 - В файле конфигурации Apache (/etc/apache2/apache2.conf) добавить или изменить настройки:
-```sh
+```xml
 <Directory />
     AllowOverride None
     Require all denied
@@ -371,8 +369,6 @@ tail -f /var/log/apache2/error.log
 > Установка SEToolkit:
 
 ```sh
-#!/bin/bash
-
 git clone https://github.com/trustedsec/social-engineer-toolkit/ setoolkit/
 cd setoolkit
 pip3 install -r requirements.txt
@@ -408,9 +404,97 @@ sudo python3 setoolkit
 
 ## Установка SIEM системы
 
-
-
- 
-
-
-<img src="">
+1. Установка Wazuh
+   - Загрузить OVA-файл Wazuh с официального сайта.
+   - Импортировать файл OVA в виртуальную машину (например, VirtualBox или VMware).
+   - Запустить виртуальную машину и выполнить первоначальную настройку (сетевые параметры, учетные данные).
+>
+2. Настройка логирования Windows
+- Установка Wazuh Agent на Windows:
+  - Загрузка агента с официального сайта Wazuh.
+  - Установка агента, указав IP-адрес Wazuh Manager.
+- Настройка агента:
+  - Необходимо отредактировать файл конфигурации агента ```(ossec.conf)```:
+    ```xml
+    <server>
+      <address>IP_Wazuh_Manager</address>
+      <port>1514</port>
+    </server>
+    ```
+  - Необходимо перезапустить агент.
+- Включить логирование Windows:
+  - Настройка сбора событий, таких как Security, Application, и System, в ```ossec.conf```.
+- Проверка соединения:
+  - Нужно убедиться, что агент отображается в Wazuh Dashboard.
+>
+3. Настройка логирования Linux (syslog/auditd)
+- Установка Wazuh Agent на Linux:
+  > Добавить репозиторий Wazuh:
+  ```sh
+  curl -s https://packages.wazuh.com/key | sudo apt-key add -
+  echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+  ```
+  > Установить агент:
+  ```sh
+  sudo apt update
+  sudo apt install wazuh-agent
+  ```
+- Настроить агент:
+  > Изменить файл /var/ossec/etc/ossec.conf
+  ```xml
+  <server>
+    <address>IP_Wazuh_Manager</address>
+    <port>1514</port>
+  </server>
+  ```
+- Включить сбор syslog:
+  > Добавить следующий раздел в ossec.conf:
+  ```xml
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+  ```
+- Включить Auditd:
+  > Установить auditd и его плагины:
+  ```sh
+  sudo apt install auditd audispd-plugins
+  ```
+  > Настроить отправку данных в Wazuh:
+  ###### В файле /etc/audisp/plugins.d/syslog.conf установите:
+  
+  ```plaintext
+  active = yes
+  direction = out
+  path = builtin_syslog
+  type = builtin
+  args = LOG_INFO
+  format = string
+  ```
+- Перезапустить службы:
+  > Для агента Wazuh:
+  ```sh
+  sudo systemctl restart wazuh-agent
+  ```
+  > Для Auditd:
+  ```sh
+  sudo systemctl restart auditd
+  ```
+<img src="./wazuh_1.png">
+<img src="./wazuh_2.png">
+<img src="./wazuh_3.png">
+<img src="./wazuh_4.png">
+<img src="./wazuh_5.png">
+<img src="./wazuh_6.png">
+<img src="./wazuh_7.png">
+<img src="./wazuh_8.png">
+<img src="./wazuh_9.png">
+<img src="./wazuh_10.png">
+<img src="./wazuh_11.png">
+<img src="./wazuh_12.png">
+<img src="./wazuh_13.png">
+<img src="./wazuh_14.png">
+<img src="./wazuh_15.png">
+<img src="./wazuh_16.png">
+<img src="./wazuh_17.png">
+<img src="./wazuh_18.png">
